@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>My Static Website</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+/* Style the body */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+}
+
+/* Header/logo Title */
+.header {
+  padding: 80px;
+  text-align: center;
+  background: #008000;
+  color: white;
+}
+
+/* Increase the font size of the heading */
+.header h1 {
+  font-size: 40px;
+}
+
+/* Style the top navigation bar */
+.navbar {
+  overflow: hidden;
+  background-color: #333;
+}
+
+/* Style the navigation bar links */
+.navbar a {
+  float: left;
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 20px;
+  text-decoration: none;
+}
+
+/* Right-aligned link */
+.navbar a.right {
+  float: right;
+}
+
+/* Change color on hover */
+.navbar a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Column container */
+.row {  
+  display: -ms-flexbox; /* IE10 */
+  display: flex;
+  -ms-flex-wrap: wrap; /* IE10 */
+  flex-wrap: wrap;
+}
+
+/* Create two unequal columns that sits next to each other */
+/* Sidebar/left column */
+.side {
+  -ms-flex: 30%; /* IE10 */
+  flex: 30%;
+  background-color: #f1f1f1;
+  padding: 20px;
+}
+
+/* Main column */
+.main {   
+  -ms-flex: 70%; /* IE10 */
+  flex: 70%;
+  background-color: white;
+  padding: 20px;
+}
+
+/* Footer */
+.footer {
+  padding: 20px;
+  text-align: center;
+  background: #ddd;
+}
+
+/* Responsive layout - when the screen is less than 700px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 700px) {
+  .row {   
+    flex-direction: column;
+  }
+}
+
+/* Responsive layout - when the screen is less than 400px wide, make the navigation links stack on top of each other instead of next to each other */
+@media screen and (max-width: 400px) {
+  .navbar a {
+    float: none;
+    width: 100%;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>The beauty of nature</h1>
+  <p>Green is the prime color of the world</p>
+</div>
+
+<div class="navbar">
+  <a href="#"></a>
+  <a href="#"></a>
+  <a href="#"></a>
+  <a href="#" class="right"></a>
+</div>
+
+<div class="row">
+  <div class="side">
+    
+    <div class="fakeimg" style="height:200px;">
+    	<img src="images/sidewalk.jpg" alt="Description of the image" style="width:50%; height:100%;">
+    </div><br>
+   
+    <div class="fakeimg" style="height:200px;">
+    	<img src="images/side 2.jpg" alt="Description of the image" style="width:50%; height:100%;">
+    </div><br>
+    
+    <div class="fakeimg" style="height:200px;">
+    	<img src="images/nature2.jpg" alt="Description of the image" style="width:50%; height:100%;">
+    </div><br>
+    
+  </div>
+  <div class="main">
+    <h2>the sky, the mountain, the tree...</h2>
+    <h5>The beauty of nature can have a profound effect upon our senses, those gateways from the outer world to the inner, whether it results in disbelief in its very existence as Emerson notes, or feelings such as awe, wonder, or amazement. </h5>
+    <div class="fakeimg" style="height:200px;">
+    	<img src="images/nature.jpg" alt="Description of the image" style="width:50%; height:100%;">
+    </div>
+    
+    <br>
+    <h2>The air smells sweeter..</h2>
+    <h5>Whether you call it nature travel, sustainable travel or responsible eco-tourism, there’s something incredibly potent, powerful, and cleansing about getting away from the hustle and bustle of the city.</h5>
+    <div class="fakeimg" style="height:200px;">
+    	<img src="images/air.jpg" alt="Description of the image" style="width:30%; height:100%;">
+	</div>
+
+    
+  </div>
+</div>
+
+<div class="footer">
+  <h2>Save The World!</h2>
+</div>
+
+</body>
+</html>
