@@ -1,0 +1,216 @@
+*************************************************************************************
+i have two databse hospital and medicare and i want to implement two phase commit in this where i 
+have a common table when patient billing is done for medicare patient , the treatment cost is reduced 
+from patient's available medicare amount limit in hospital we have patient details as the master 
+info used during the billing process develop a java program through which the hospital clerk can 
+create a new bill for patient entering the patient id ,treatmentcode and billing amount and date 
+of billing as minimum required info we can add additional field .
+give a database query (sql query) with appropriate table with values for both hospital and medicare database
+
+*************************************************
+for properties file   
+String connectionUrl1="jdbc:sqlserver://172.16.51.64;databaseName=231047012;encrypt=true;trustServerCertificate=true;";
+		String connectionUrl2="jdbc:sqlserver://172.16.51.64;databaseName=231047014;encrypt=true;trustServerCertificate=true;";
+		Properties properties = new Properties();
+----------------in database connection1--------------------------------------------
+Hospital database
+
+CREATE TABLE Patients (
+    PatientID INT PRIMARY KEY,
+    PatientName VARCHAR(100),
+    AvailableMedicareAmount DECIMAL(10, 2)
+);
+
+CREATE TABLE Bills (
+    BillID INT PRIMARY KEY,
+    PatientID INT,
+    TreatmentCode VARCHAR(20),
+    BillingAmount DECIMAL(10, 2),
+    BillingDate DATE,
+    CONSTRAINT fk_patient FOREIGN KEY (PatientID) REFERENCES Patients(PatientID)
+);
+----------------in database connection 2-----------------------------
+Medical database
+CREATE TABLE MedicareTransactions (
+    TransactionID INT PRIMARY KEY,
+    PatientID INT,
+    TransactionAmount DECIMAL(10, 2),
+    TransactionDate DATE
+);
+
+INSERT INTO Bills (PatientID, TreatmentCode, BillingAmount, BillingDate)
+VALUES (patient_id_value, 'treatment_code_value', billing_amount_value, 'billing_date_value');
+
+INSERT INTO MedicareTransactions (PatientID, TransactionAmount, TransactionDate)
+VALUES (patient_id_value, transaction_amount_value, 'transaction_date_value');
+
+-- Insert records into Patients table
+INSERT INTO Patients (PatientID, PatientName, AvailableMedicareAmount)
+VALUES
+    (1001, 'John Doe', 500.00),
+    (1002, 'Jane Smith', 750.00),
+    (1003, 'Alice Johnson', 600.00),
+    (1004, 'Bob Williams', 700.00),
+    (1005, 'Emma Brown', 800.00);
+
+-- Insert records into Bills table
+INSERT INTO Bills (BillID, PatientID, TreatmentCode, BillingAmount, BillingDate)
+VALUES
+    (1, 1001, 'TC001', 150.00, '2024-05-12'),
+    (2, 1002, 'TC002', 200.00, '2024-05-13'),
+    (3, 1003, 'TC003', 175.50, '2024-05-14'),
+    (4, 1004, 'TC004', 300.00, '2024-05-15'),
+    (5, 1005, 'TC005', 250.00, '2024-05-16');
+    
+-- Insert records into MedicareTransactions table
+INSERT INTO MedicareTransactions (TransactionID, PatientID, TransactionAmount, TransactionDate)
+VALUES
+    (1, 1001, 100.00, '2024-05-12'),
+    (2, 1002, 150.00, '2024-05-13'),
+    (3, 1003, 75.50, '2024-05-14'),
+    (4, 1004, 200.00, '2024-05-15'),
+    (5, 1005, 125.00, '2024-05-16');
+
+
+**********************************************************
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class TwoPhaseCommitDemo {
+    static final String hospitalDbUrl = "jdbc:mysql://hospital_db_host:3306/hospital";
+    static final String medicareDbUrl = "jdbc:mysql://medicare_db_host:3306/medicare";
+    static final String hospitalDbUser = "hospital_user";
+    static final String hospitalDbPassword = "hospital_password";
+    static final String medicareDbUser = "medicare_user";
+    static final String medicareDbPassword = "medicare_password";
+
+    public static void main(String[] args) {
+        Connection hospitalConn = null;
+        Connection medicareConn = null;
+        PreparedStatement hospitalStmt = null;
+        PreparedStatement medicareStmt = null;
+
+        try {
+            // Step 1: Establish connections to hospital and medicare databases
+            hospitalConn = DriverManager.getConnection(hospitalDbUrl, hospitalDbUser, hospitalDbPassword);
+            medicareConn = DriverManager.getConnection(medicareDbUrl, medicareDbUser, medicareDbPassword);
+
+            // Step 2: Set auto-commit to false to begin a transaction
+            hospitalConn.setAutoCommit(false);
+            medicareConn.setAutoCommit(false);
+
+            // Step 3: Execute SQL statements within the transaction
+            hospitalStmt = hospitalConn.prepareStatement("INSERT INTO Bills (PatientID, TreatmentCode, BillingAmount, BillingDate) VALUES (?, ?, ?, ?)");
+            hospitalStmt.setInt(1, patientID);
+            hospitalStmt.setString(2, treatmentCode);
+            hospitalStmt.setDouble(3, billingAmount);
+            hospitalStmt.setDate(4, billingDate);
+            hospitalStmt.executeUpdate(); // Execute hospital database operation
+
+            medicareStmt = medicareConn.prepareStatement("INSERT INTO MedicareTransactions (PatientID, TransactionAmount, TransactionDate) VALUES (?, ?, ?)");
+            medicareStmt.setInt(1, patientID);
+            medicareStmt.setDouble(2, transactionAmount);
+            medicareStmt.setDate(3, transactionDate);
+            medicareStmt.executeUpdate(); // Execute medicare database operation
+
+            // Step 4: Commit the transaction across both databases
+            hospitalConn.commit();
+            medicareConn.commit();
+            System.out.println("Transaction committed successfully.");
+
+        } catch (SQLException e) {
+            try {
+                // Step 5: Rollback the transaction in case of any errors
+                if (hospitalConn != null) hospitalConn.rollback();
+                if (medicareConn != null) medicareConn.rollback();
+                System.out.println("Transaction rolled back.");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                // Step 6: Close connections and statements
+                if (hospitalStmt != null) hospitalStmt.close();
+                if (medicareStmt != null) medicareStmt.close();
+                if (hospitalConn != null) hospitalConn.close();
+                if (medicareConn != null) medicareConn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+********************************************
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class TwoPhaseCommitDemo {
+    static final String hospitalDbUrl = "jdbc:sqlserver://172.16.51.64;databaseName=231047020;encrypt=true;"
+				+ "trustServerCertificate=true;user=SRUSTI;password=srustii@123";
+    static final String medicareDbUrl = "jdbc:sqlserver://172.16.51.64;databaseName=231047014;encrypt=true;"
+				+ "trustServerCertificate=true;user=SHRINIDHI;password=shrinidhi@1";
+  
+    public static void main(String[] args) {
+        Connection hospitalConn = null;
+        Connection medicareConn = null;
+        PreparedStatement hospitalStmt = null;
+        PreparedStatement medicareStmt = null;
+
+        try {
+            // Step 1: Establish connections to hospital and medicare databases
+            hospitalConn = DriverManager.getConnection(hospitalDbUrl);
+            medicareConn = DriverManager.getConnection(medicareDbUrl);
+
+            // Step 2: Set auto-commit to false to begin a transaction
+            hospitalConn.setAutoCommit(false);
+            medicareConn.setAutoCommit(false);
+
+            // Step 3: Execute SQL statements within the transaction
+            hospitalStmt = hospitalConn.prepareStatement("INSERT INTO Bills (PatientID, TreatmentCode, BillingAmount, BillingDate) VALUES (?, ?, ?, ?)");
+            hospitalStmt.setInt(1, patientID);
+            hospitalStmt.setString(2, treatmentCode);
+            hospitalStmt.setDouble(3, billingAmount);
+            hospitalStmt.setDate(4, billingDate);
+            hospitalStmt.executeUpdate(); // Execute hospital database operation
+
+            medicareStmt = medicareConn.prepareStatement("INSERT INTO MedicareTransactions (PatientID, TransactionAmount, TransactionDate) VALUES (?, ?, ?)");
+            medicareStmt.setInt(1, patientID);
+            medicareStmt.setDouble(2, transactionAmount);
+            medicareStmt.setDate(3, transactionDate);
+            medicareStmt.executeUpdate(); // Execute medicare database operation
+
+            // Step 4: Commit the transaction across both databases
+            hospitalConn.commit();
+            medicareConn.commit();
+            System.out.println("Transaction committed successfully.");
+
+        } catch (SQLException e) {
+            try {
+                // Step 5: Rollback the transaction in case of any errors
+                if (hospitalConn != null) hospitalConn.rollback();
+                if (medicareConn != null) medicareConn.rollback();
+                System.out.println("Transaction rolled back.");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                // Step 6: Close connections and statements
+                if (hospitalStmt != null) hospitalStmt.close();
+                if (medicareStmt != null) medicareStmt.close();
+                if (hospitalConn != null) hospitalConn.close();
+                if (medicareConn != null) medicareConn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
